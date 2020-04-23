@@ -1,0 +1,153 @@
+/* desktop */
+* {
+    margin: 0px;
+    padding: 0px;
+    font-family: 'Questrial', sans-serif;
+    
+}
+
+
+#main {
+    height:75%;
+    width:60%;
+}
+
+
+
+.f_center{
+    margin: 0 auto;
+}
+
+.f_right{
+    float: right;
+}
+
+.f_left{
+    float: left;
+}
+
+.f_clear{
+    clear: both;
+}
+
+
+@media only screen and (min-width: 767px) {
+
+    html{
+        height: 100%;
+        width: 100%;
+        margin: 0 auto;
+    }
+    body{
+        height: 100%;
+        width: 100%;
+        margin: 0 auto;
+    }
+    #logo{
+    text-align: center;
+    padding-top: 3%;
+    margin-left: -2%;
+}
+    
+    #page-wrapper{
+        margin 0 auto;
+        height: 100%;
+        width: 100%;
+        background-image: url('bg.jpg');
+        background-repeat: no-repeat;
+        background-position: center;
+        
+    }
+    
+    #all_content{
+        height: 100%;
+        width: 100%;
+    }
+    
+    .logo_font{
+        
+
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    }
+    
+    h1 {
+        font-size: 36px;
+        font-weight: bold;
+    }
+
+    #hold_heading{
+    padding-top: 14%;
+    text-align: center;
+}
+    #hold_file{
+        text-align: center;
+        padding-left: 8%;
+    }
+    .col_1 {
+        width: 8.33%;
+    }
+    
+    .col_2 {
+        width: 16.66%;
+    }
+    
+    .col_3{
+        width: 25%;
+    }
+    
+    .col_4{
+        width: 33.33%;
+    }
+    
+    .col_5{
+        width: 41.66%;
+    }
+    
+    .col_6{
+        width: 50%;
+    }
+    
+    .col_7{
+        width: 58.33%;
+    }
+    
+    .col_8{
+        width: 66.66%;
+    }
+    
+    .col_9{
+        width: 75%;
+    }
+    
+    .hard_contain{
+        width: 980px;
+    }
+    
+    .col_10{
+        width: 83.33%;
+    }
+    
+    .col_11{
+        width: 91.66%;
+    }
+    
+    .col_12{
+        width: 100%;
+    }
+    
+    .header{
+        display: block;
+        height: 300 px;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+  /* For mobile phones: */
+  [class*="col-"] {
+    width: 100%;
+  }
+  
+
+  
+}

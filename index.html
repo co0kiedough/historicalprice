@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Riverside Financial Historical Stock/Equity Price</title>
+
+  <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css?family=Cairo|PT+Sans|Questrial&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Cairo|PT+Sans&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet"> 
+    <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+		integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+		crossorigin="anonymous">
+    </script>
+    <script src='https://unpkg.com/papaparse@5.2.0/papaparse.min.js'></script>
+    <script src='http://typeiii.github.io/jquery-csv/src/jquery.csv.js'></script>
+    
+
+</head>
+<body style='height: 100%; width: 100%;'>
+  <div id='all_content'>
+  <div id="page-wrapper">
+    <div id='main' class='f_center' style='display: block;'>
+	  <div id='logo' class='logo_font'><img src='logo.png'><br>Riverside Financial Group</div>
+        <div class='f_center' id='hold_heading'><h1>Historical Stock Price</h1></div>
+        <div id='hold_file' class='f_center'>
+		  <br>
+          Select a .csv file: 
+          <input type="file" id="files">
+        </div>
+        <pre id="fileDisplayArea"></pre>
+    </div>
+  </div>
+  </div>
+  
+  
+  <script>
+    var finalArr = new Array();
+    
+    $(document).ready(function(){
+	console.log('document loaded');
+	
+        if(isAPIAvailable()) {
+            $('#files').bind('change', handleFileSelect);
+          }
+  
+    });
+    
+    function isAPIAvailable() {
+      // Check for the various File API support.
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            return true;
+            }
+        else
+            {
+            // source: File API availability - http://caniuse.com/#feat=fileapi
+            // source: <output> availability - http://html5doctor.com/the-output-element/
+            document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
+            // 6.0 File API & 13.0 <output>
+            document.writeln(' - Google Chrome: 13.0 or later<br />');
+            // 3.6 File API & 6.0 <output>
+            document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
+            // 10.0 File API & 10.0 <output>
+            document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
+            // ? File API & 5.1 <output>
+            document.writeln(' - Safari: Not supported<br />');
+            // ? File API & 9.2 <output>
+            document.writeln(' - Opera: Not supported');
+            
+            return false;
+            }
+    }
+    
+    function handleFileSelect(evt) {
+        finalArr = [];
+        var files = evt.target.files;
+        var file = files[0];
+       
+        if (file) {
+        readFile(file);
+       }
+    }
+    
+    function readFile(selectFile){
+        var reader = new FileReader();
+        
+        reader.readAsText(selectFile);
+        reader.onprogress = updateProg;
+        reader.onload = loaded;
+        reader.onerror = errorHandler;
+    }
+    
+    function updateProg(evt) {
+        if (evt.lengthComputable) {
+            var floaded = (evt.loaded / evt.total);
+            if (floaded < 1) {
+                //increase prog bar
+                console.log(floaded * 200);
+            }
+        }
+    }
+    
+    function loaded(evt) {
+        var fileString = evt.target.result;
+        var data = $.csv.toObjects(fileString);
+       
+        handleCsv(data);
+    }
+    
+    function errorHandler(evt) {
+        if (evt.target.error.name == "NotReadableError") {
+            //File could not be read
+            console.log('File could not be read');
+        }
+    }
+    
+    function handleCsv(csvObject) {
+        
+        var curcsv = csvObject;
+        var fixedObj = new Object();
+        var fixedArr = new Array();
+        for (var row in curcsv){
+            var fixDate = curcsv[row]['Date'];
+            var d1 = new Date(fixDate).valueOf();
+            var d2 = d1 + 86400000;
+            d1 = d1.toString();
+            d2 = d2.toString();
+            d1 = d1.slice(0, -3);
+            d2 = d2.slice(0, -3);
+            d1 = parseInt(d1);
+            d2  = parseInt(d2);
+            fixedObj[curcsv[row]['Symbol']] = {'Symbol':curcsv[row]['Symbol'], 'Date':curcsv[row]['Date'], 'd1':d1,'d2':d2};
+            fixedArr.push({'Symbol':curcsv[row]['Symbol'], 'Date':curcsv[row]['Date'], 'd1':d1,'d2':d2});
+        }
+        console.log(fixedObj);
+        getHistoric(fixedObj, fixedArr);
+    }
+    
+    function getHistoric(symbolObj, symbolArr){
+            var so = symbolObj;
+            var sa = symbolArr;
+            var soLength = Object.keys(so).length;
+            var endObj = new Object();
+            checkLen = 1;
+            arrLen = sa.length;
+            sa.forEach(function(item, i){
+                //console.log(sa[i]);
+                tempObj = new Object();
+                tempArr = new Array();
+                console.log(item);
+                console.log(i);
+                var symb = item['Symbol'];
+                var d1 = item['d1'];
+                var d2 = item['d2'];
+                var od = item['Date'];
+                var data = null;
+                var xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+                
+                xhr.addEventListener("readystatechange", function () {
+                    if (this.readyState === this.DONE) {
+                        //console.log(this.responseText);
+                        resptxt = JSON.parse(this.responseText);
+                        
+                        tempObj = {
+                            'Symbol':symb,
+                            'Date':od,
+                            'Price':resptxt['prices'][0]['close']
+                            };
+                        returnArray(tempObj,arrLen);
+                        tempObj = {};
+                    }
+                });
+                
+                xhr.open("GET", "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v2/get-historical-data?frequency=1d&filter=history&period1="+d1+"&period2="+d2+"&symbol=" + symb);
+                xhr.setRequestHeader("x-rapidapi-host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+                xhr.setRequestHeader("x-rapidapi-key", "f1486ac795msh0465490e3a590ffp1340a8jsnc25d53ef030d");
+                
+                xhr.send(data);
+                
+            });
+
+        }
+            //console.log(endArray);
+            
+        
+    
+    function returnArray(returnObj, len) {
+        
+        console.log(returnObj);
+        finalArr.push(returnObj);
+        
+        if (finalArr.length == len) {
+            console.log(finalArr);
+            saveCsv(finalArr);
+			
+            //code
+        }
+
+    }
+    
+    function saveCsv(objArray){
+        var csv = Papa.unparse(finalArr);
+		var csvData = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+		var csvURL =  null;
+		  if (navigator.msSaveBlob) {
+			  csvURL = navigator.msSaveBlob(csvData, 'download.csv');
+		  } else {
+			  csvURL = window.URL.createObjectURL(csvData);
+		  }
+		var tempLink = document.createElement('a');
+		tempLink.href = csvURL;
+		var d = new Date();
+		var month = '' + (d.getMonth() + 1);
+		var day = '' + d.getDate();
+		var year = d.getFullYear();
+		if (month.length < 2) {
+		  month = '0' + month;
+		}
+		if (day.length <2) {
+		  day = '0' + day;
+		  
+		}
+		nday = [year,month,day].join('-');
+		tempLink.setAttribute('download', nday + 'download.csv');
+		tempLink.click();
+    }
+    
+    
+  </script>
+  
+  
+</body>
+</html>
